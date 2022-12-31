@@ -1,5 +1,5 @@
 import random
-from typing import Tuple, List
+from typing import Tuple, Union
 
 from ..othello.gamestate import GameState
 
@@ -16,19 +16,19 @@ def make_move(state: GameState) -> Tuple[int, int]:
     :param state: state to make the move
     :return: (int, int) tuple with x, y coordinates of the move (remember: 0 is the first row/column)
     """
-    v, a = max(state, float('-inf'), float('inf'))
+    v, a = maximum(state, float('-inf'), float('inf'), 0)
     return a
 
 
-def maximum(state: GameState, alpha: int, beta: int) -> Tuple[int, Tuple[int, int]]:
-    if teste_corte(state):
-        return avalia(state)
+def maximum(state: GameState, alpha: int, beta: int, depth: int) -> Tuple[int, Tuple[int, int]]:
+    if teste_corte(depth):
+        return avalia(state), (-1, -1)
 
     v = float('-inf')
     a = None
 
     for succ_state, succ_a in sucessores(state):
-        v = maximum(v, minimum(succ_state, alpha, beta))
+        v = max(v, minimum(succ_state, alpha, beta, depth+1)[0])
         a = succ_a
         alpha = max(alpha, v)
 
@@ -37,30 +37,39 @@ def maximum(state: GameState, alpha: int, beta: int) -> Tuple[int, Tuple[int, in
     return alpha, a
 
 
-def minimum(state: GameState, alpha: int, beta: int) -> Tuple[int, Tuple[int, int]]:
-    if teste_corte(state):
-        return avalia(state)
+def minimum(state: GameState, alpha: int, beta: int, depth: int) -> Tuple[int, Tuple[int, int]]:
+    if teste_corte(depth):
+        return avalia(state), (-1, -1)
 
     v = float('inf')
     a = None
 
     for succ_state, succ_a in sucessores(state):
-        v = minimum(v, maximum(succ_state, alpha, beta))
+        v = min(v, maximum(succ_state, alpha, beta, depth+1)[0])
         a = succ_a
-        alpha = min(alpha, v)
+        beta = min(beta, v)
 
         if alpha >= beta:
             break
-    return alpha, a
+    return beta, a
 
 
-def teste_corte(state: GameState) -> bool:
-    pass
+def teste_corte(depth: int) -> bool:
+    return depth >= 5
 
 
-def avalia(state: GameState) -> Thales:
-    pass
+def avalia(state: GameState) -> int:
+    player = state.player
+    tiles = state.board.tiles
+
+    qtt = 0
+    for line in tiles:
+        for piece in line:
+            if piece == player:
+                qtt += 1
+    return qtt
 
 
-def sucessores(state: GameState) -> List[GameState, Tuple[int, int]]:
+def sucessores(state: GameState) -> Tuple[GameState, Tuple[int, int]]:
     return [(state.next_state(move), move) for move in state.legal_moves()]
+
