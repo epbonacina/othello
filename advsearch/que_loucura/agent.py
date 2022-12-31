@@ -21,7 +21,7 @@ def make_move(state: GameState) -> Tuple[int, int]:
 
 
 def maximum(state: GameState, alpha: int, beta: int, depth: int) -> Tuple[int, Tuple[int, int]]:
-    if teste_corte(state, depth):
+    if teste_corte(depth):
         return avalia(state), (-1, -1)
 
     v = float('-inf')
@@ -38,7 +38,7 @@ def maximum(state: GameState, alpha: int, beta: int, depth: int) -> Tuple[int, T
 
 
 def minimum(state: GameState, alpha: int, beta: int, depth: int) -> Tuple[int, Tuple[int, int]]:
-    if teste_corte(state, depth):
+    if teste_corte(depth):
         return avalia(state), (-1, -1)
 
     v = float('inf')
@@ -54,7 +54,7 @@ def minimum(state: GameState, alpha: int, beta: int, depth: int) -> Tuple[int, T
     return beta, a
 
 
-def teste_corte(state: GameState, depth: int) -> bool:
+def teste_corte(depth: int) -> bool:
     return depth >= 5
 
 
