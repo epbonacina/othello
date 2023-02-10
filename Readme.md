@@ -1,118 +1,57 @@
-# Kit othello
-Kit para executar partidas de Othello e implementar o algoritmo de poda alfa-beta.
-
-## Conteudo
-O kit contém os seguintes arquivos (todos os `__init__.py` estao omitidos):
-
-```text
-kit_othello
-|-- advsearch
-|   |-- othello
-|   |   |-- board.py       <-- encapsula o tabuleiro
-|   |   \-- gamestate.py   <-- encapsula um estado do jogo (config. do tabuleiro e cor que joga)
-|   |-- randomplayer
-|   |   \-- agent.py       <-- agente que joga aleatoriamente
-|   |-- humanplayer        
-|   |   \-- agent.py       <-- agente para um humano jogar 
-|   |-- timer.py           <-- funcoes auxiliares de temporizacao
-|   \-- your_agent         <-- renomeie este diretorio c/ o nome do seu agente (pode adicionar outros arquivos aqui se precisar)
-|       \-- agent.py       <-- preencha o make_move aqui 
-|-- server.py
-|-- server_tui.py
-\-- test_agent.py          <-- teste o funcionamento basico do seu agente (pode adicionar outros casos de teste)
-```
+A Alpha-beta pruning based AI capable of playing Othello.
 
 
-## Requisitos 
-O servidor foi testado em uma máquina GNU/Linux com o interpretador python 3.9.7.
+# How to play
+We recommend the [World Othello Federation](https://www.worldothello.org/about/about-othello/othello-rules/official-rules/english) website for more information about game rules.
 
-Outras versões do interpretador python ou sistema operacional podem funcionar, mas não foram testados.
+In order to test our AI, you could run `python server.py advsearch.fanatico advsearch.humanplayer`.  
+This command should start a match between you, the human player, and our AI, `fanatico`.
 
-## Instruções
+The current board will always be displayed on screen and, during your turn, you will be asked to type the column and line on which you want to place a disk. You should type something like `7 0`, where `7` and `0` are the chosen column and line, respectively.
 
-Para iniciar uma partida de Othello, digite no terminal:
+![image](https://user-images.githubusercontent.com/63553534/217971348-55f33832-0724-4995-8967-67112aaf4f47.png)
 
-`python server.py [-h] [-d delay] [-p pace]  [-o output-file] [-l log-history] advsearch.player1 advsearch.player2`
+The asterisks that surround some disks in the previous image represent the disks that have flipped from `W` (white) to `B` (black) during the previous player move. 
 
-Para ver o tabuleiro e as peças com cores, instale a biblioteca `pytermgui` (por exemplo, com `pip install pytermgui`) e execute o `server_tui.py` ao invés do `server.py`.
+# Available players
+There are a few available players for you to test.
 
-Nos parâmetros, 'player(1 ou 2)' são os diretórios dentro de `advsearch` onde estão implementados os módulos dos jogadores (dentro do arquivo agent).
+- `advsearch.fanatico`, which is our current best player;
+- `advsearch.que_loucura`, which is our previous champion;
+- `advsearch.randomplayer`, which has no brain;
+- `advsearch.humanplayer`, which is you.
 
-Os argumentos entre colchetes são opcionais, seu significado é descrito a seguir:
-```text
--h, --help            Mensagem de ajuda
--d delay, --delay delay
-                    Tempo alocado para os jogadores realizarem a jogada (default=5s)
--p pace, --pace pace
-                    Tempo mínimo que o servidor espera para processar a jogada (para poder ver partidas muito 
-                    rapidas sem se perder no terminal)
--l log-history, --log-history log-history
-                    Arquivo para o log do jogo (default=history.txt)
--o output-file, --output-file output-file
-                    Arquivo de saida com os detalhes do jogo (inclui historico)
-```
+You can choose which players you want to test in the previous section.
 
-O jogador 'random' se localiza no diretório `advsearch/randomplayer`. Para jogar uma partida com ele,
-basta substituir player1 ou 2 por randomplayer. Como exemplo, inicie
-uma partida random vs. random para ver o servidor funcionando:
 
-`python server.py advsearch.randomplayer advsearch.randomplayer -d 1 -p 0.3`
+# Required Python packages
+There are no external Python packages needed.
 
-O delay pode ser de 1 segundo porque o jogador random é muito rápido (e muito incompetente). O passo é de 0.3 segundos para acompanhar o progresso da partida (pode acelerar ou reduzir conforme a necessidade).
 
-O jogador 'human' se localiza no diretório `advsearch.humanplayer`. Você pode utilizar este player para jogar você mesmo e testar suas habilidades contra outro agente (inclusive o que você está construindo nesse trabalho). 
+# Implementation details
+## Evaluation:
+Our champion evaluates the current board analysing its `actual_mobility`, `potencial_mobility` and its corners.
+- `actual_mobility`: analyses the number of moves each player can make;
+- `potencial_mobility`: analyses the number of empty slots around each player's disks;
+- `corners_indirect`: analyses if its possible to capture a corner during the next turn;
+- `corners_direct`: analyses the number of corners captured by the player.
 
-Para jogar com ele, utilize os mesmo passos do jogador 'random', trocando o player1 ou 2 por `advsearch.humanplayer`. Você terá o limite de 1 minuto para pensar na sua jogada. Digite as coorenadas da ação na ordem `<coluna> <linha>`.  
+## Terminating condition
+We use a simple depth terminating condition. When our AI explores more than a certain number of levels of the tree, it returns the its evaluation of the current board. If the computer on which the AI is beeing executed is powerful enough, the depth will be automatically increased.
 
-## Funcionamento 
+## Enhancements
+- We've optimized our weights by minimizing the Mean Squared Error (MSE) of our evaluation function. Because of its demanding nature, the process of minimizing the MSE was only possible after pre-computing the evaluation function components. It boosted our optimization process in at least 10000x and gave us a very small MSE (<0,001).
 
-Iniciando pelo primeiro jogador, que jogará com as peças pretas, o servidor chama a função `make_move(state)` do seu `agent.py`. A função recebe `state`, um objeto da classe `GameState` que contém um tabuleiro (objeto da classe `Board` e o jogador a fazer a jogada (um caractere) (`B` para as pretas ou `W` para as brancas). Para os detalhes, veja `othello/gamestate.py` e `othello/board.py`.
+- We've implemented a Transposition Table that is responsible for detecting if the current game state has already been seen before. If that is the case, then we already have the computed value for that state.
 
-O servidor então espera o delay e recebe a tupla (x,y) com coluna e linha com a jogada do jogador. O servidor processa a jogada, exibe o novo estado no terminal e passa a vez para o próximo jogador, repetindo esse ciclo até o fim do jogo.
+# Developers
+- Enzo Pedro Bonacina [Turma B] 00313316;
+- Thales Junqueira Albergaria Moraes Perez [Turma B] 00303035;
+- Hiram Artnak Martins [Turma B] 00276484.
 
-No fim do jogo, o servidor exibe a pontuação de cada jogador e cria um arquivo `results.xml`.
-com todas as jogadas tentadas pelos jogadores (inclusive as ilegais). Um arquivo `history.txt` também contém as jogadas, e esse é criado mesmo que a partida seja interrompida no meio (e.g. crash de um agente).
-
-Em um objeto da classe `Board`, o atributo `tiles` contém a representação do tabuleiro como uma matriz de caracteres (ou lista de strings ;). `W` representa uma peça branca (white), `B` uma peça preta (black) e `.` (ponto) representa um espaço livre. No exemplo a seguir, temos a representação do estado inicial de Othello. 
-
-```text
-[
-“........”,
-“........”,
-“........”,
-“...WB...”,
-“...BW...”,
-“........”,
-“........”,
-“........”,
-]
-```
-
-O eixo x cresce da esquerda para a direita e o eixo y cresce de cima para baixo. O exemplo a seguir mostra o sistema de coordenadas para o estado inicial. 
-
-```text
-  01234567 --> eixo x
-0 ........
-1 ........
-2 ........
-3 ...WB...
-4 ...BW...
-5 ........
-6 ........
-7 ........
-|
-|
-v
-eixo y
-```
-
-IMPORTANTE: cuidado com o sistema de coordenadas vs a indexação de matrizes. Sua função make_move deve retornar as coordenadas x, y (coluna, linha) enquanto a representação de matriz endereça primeiramente a linha e depois a coluna.
+# References
+- Artificial Intelligence: A Modern Approach. Disponível em: <http://aima.cs.berkeley.edu/>;
+- SANNIDHANAM, V.; ANNAMALAI, M. An Analysis of Heuristics in Othello. [s.l: s.n.]. Disponível em: <https://courses.cs.washington.edu/courses/cse573/04au/Project/mini1/RUSSIA/Final_Paper.pdf>.
 
 
 
-## Notas
-* O servidor checa a legalidade das jogadas antes de efetivá-las.
-* Jogadas ilegais resultam em desqualificação.
-* O jogador 'random' apenas sorteia uma jogada entre as válidas no estado recebido.
-* O jogador 'human' verifica a legalidade da jogada antes de enviá-la ao servidor.
-* Em caso de problemas com o servidor, reporte via moodle ou email.
