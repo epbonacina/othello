@@ -46,8 +46,8 @@ We use a simple depth terminating condition. When our AI explores more than a ce
 
 # Developers
 - Enzo Pedro Bonacina [Turma B] 00313316;
-- Thales Junqueira Albergaria Moraes Perez [Turma B] 00303035;
-- Hiram Artnak Martins [Turma B] 00276484.
+- Hiram Artnak Martins [Turma B] 00276484;
+- Thales Junqueira Albergaria Moraes Perez [Turma B] 00303035.
 
 # References
 - Artificial Intelligence: A Modern Approach. Disponível em: <http://aima.cs.berkeley.edu/>;
