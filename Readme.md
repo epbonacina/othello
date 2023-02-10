@@ -1,5 +1,4 @@
-A Alpha-beta pruning based AI capable of playing Othello.
-
+A Alpha-beta pruning based AI that plays Othello.
 
 # How to play
 We recommend the [World Othello Federation](https://www.worldothello.org/about/about-othello/othello-rules/official-rules/english) website for more information about game rules.
@@ -17,7 +16,6 @@ The asterisks that surround some disks in the previous image represent the disks
 There are a few available players for you to test.
 
 - `advsearch.fanatico`, which is our current best player;
-- `advsearch.que_loucura`, which is our previous champion;
 - `advsearch.randomplayer`, which has no brain;
 - `advsearch.humanplayer`, which is you.
 
